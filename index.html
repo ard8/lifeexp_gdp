@@ -1,12 +1,14 @@
+<!DOCTYPE html>
 <html>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src='https://d3js.org/d3.v5.min.js'></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style> circle {
-    /*fill: lightblue;*/
     stroke: black;
     opacity: 0.2
 }
@@ -15,10 +17,10 @@
     opacity: 1;
     position: absolute;
     width: 120px;
-    height: 70px;
+    height: 100px;
     text-align: center;
     background-color: white;
-    border: 3px solid orange;
+    border: 3px solid green;
     border-radius: 10px;
     padding: 2px
 }
@@ -39,22 +41,22 @@
                 <div id="button1" class="btn btn-primary" onclick="changeScene(1)">1</div>
                 <div id="button2" class="btn btn-default" onclick="changeScene(2)">2</div>
                 <div id="button3" class="btn btn-default" onclick="changeScene(3)">3</div>
+                <div id="button4" class="btn btn-default" onclick="changeScene(4)">4</div>
                 </p>
             </div>
         </div>
         <div id="scene-desc" class="">
             <p>Looking at the chart, we can see a clear relationship between life expectance and GDP per Capita.
-                People tends to have a lower life expectance if they are poor, and on the contrary the people that live in wealthy
-                countries tend to have a higher life expectancy.</p>
+                 People tends to have a lower life expectance in poor countries, and on the contrary the people that
+                live in wealthy countries tend to have a higher life expectancy.</p>
         </div>
-
-        <!--        <h2>Year</h2>-->
-        <!--        <div class="row align-items-center">-->
-        <!--            <div class="col-sm-2"><p id="value-time"></p></div>-->
-        <!--            <div class="col-sm">-->
-        <!--                <div id="slider-time"></div>-->
-        <!--            </div>-->
-        <!--        </div>-->
+                <h3>Year</h3>
+                <div class="row align-items-center">
+                    <div class="col-sm-2"><p id="value-time"></p></div>
+                    <div class="col-sm">
+                        <div id="slider-time"></div>
+                    </div>
+                </div>
         <div id="legend-group" class="col-sm-3">
             <div class="legendTitle" style="font-size: 12px;">REGION</div>
             <div id="legend"></div>
@@ -97,8 +99,8 @@
             regionSelect = ""
             showLegendSelection = false;
             d3.select("#scene-desc")
-                .html("<p>Looking at the chart, we can see a clear relationship between birth rate and income." +
-                    "People tends to give less birth if they are rich, and on the contrary the people in less wealthier tend to give more birth.</p>")
+                .html("<p>Looking at the chart, we can see a clear relationship between life expectancy and GDP per Capita." +
+                    "People tends to have a lower life expectance in poor countries, and on the contrary the people that live in wealthy countries tend to have a higher life expectancy.</p>")
             resetScene(1);
         }
         if (golbalSceneNumber === 2) {
@@ -110,7 +112,7 @@
             showLegendSelection = false;
             d3.select("#scene-desc")
                 .html("<p>But there are still regional difference. For example Europe is different. " +
-                    "It seems all European countries tend to have very low birth rate, though their incomes vary much.</p>")
+                    "It seems all European countries tend to have very higher life expectancy, though their GDP per Capita vary much.</p>")
             d3.select("#div_template").html("")
             resetScene(2)
         }
@@ -126,38 +128,51 @@
                     "Try move your mouse over the legend and the circles.</p>")
             resetScene(3)
         }
+        if (golbalSceneNumber === 4) {
+            showToolTip = false;
+            showAnnotation1 = true
+            showAnnotation2 = false
+            showYearSelection = false;
+            regionSelect = ""
+            showLegendSelection = false;
+            d3.select("#scene-desc")
+                .html("<p>Looking at the chart, we can see a clear relationship between life expectancy and GDP per Capita." +
+                    "People tends to have a lower life expectance in poor countries, and on the contrary the people that live in wealthy countries tend to have a higher life expectancy.</p>")
+            resetScene(4);
+        }
     }
 
     async function init() {
+    //console.log('init function started'); 
         // create a tooltip
         var Tooltip = d3.select("#div_template")
             .append("div")
             .style("opacity", 0)
             .style("position", "absolute")
             .attr("class", "tooltip")
-            .style("width", "150px")
-            .style("height", "85px")
+            .style("width", "200px")
+            .style("height", "100px")
             .style("text-align", "center")
             .style("background-color", "white")
             .style("border", "solid")
             .style("border-width", "2px")
             .style("border-radius", "2px")
-            .style("padding", "1px");
+            .style("padding", "2px");
 
         if (showAnnotation1) {
             var Annotation1_1 = d3.select("#div_template")
                 .append("div")
                 .attr("class", "annotation")
-                .html("The <em>poorest</em> countries have <em>lowest</em> life expectancy")
+                .html("The <em>poorest</em> countries have <em>Lowest</em> life expectancy")
                 .style("left", "100px")
-                .style("top", "10px")
+                .style("top", "300px")
 
             var Annotation1_2 = d3.select("#div_template")
                 .append("div")
                 .attr("class", "annotation")
                 .html("The <em>richest</em> countries have <em>Highest</em> life expectancy")
                 .style("left", "750px")
-                .style("top", "300px")
+                .style("top", "10px")
         }
 
 
@@ -180,8 +195,8 @@
         var mousemove = function (d) {
             Tooltip
                 .html("<em>" + d.Country + "</em><br/> Population: " + d.Population +"<br>" +
-                    "Birth rate: " + d.BirthRate + "<br/>" +
-                    "GDP/capita: " + d.Income)
+                    "Life Expectancy: " + d.LifeExp + "<br/>" +
+                    "GDP/capita: " + d.GDP)
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 220) + "px")
         };
@@ -203,16 +218,15 @@
                 return 0.05;
             }
         }
-        var regions = ["Africa", "The Americas", "Asia", "Europe", "Middle East", "Oceania"];
+        var regions = ["Africa", "Asia", "Europe", "North America", "Oceania", "South America"];
 
-        var ys = d3.scaleLinear().domain([0, 0.06]).range([height, 0]);
+        var ys = d3.scaleLinear().domain([0, 100]).range([height, 0]);
         var xs = d3.scaleLog().domain([100, 100000]).range([0, width]);
         var rs = d3.scaleLog().domain([30000, 1600000000]).range([0, 15]);
         var cs = d3.scaleOrdinal().domain(regions)
             .range(["gold", "blue", "green", "red", "brown", "slateblue"])
-
-        data = await d3.csv("https://yukuo78.github.io/cs498/gdp_birth_pop_2012.csv");
-
+        data = await d3.csv('./data3.csv');
+        console.log(data);
         var svg = d3.select("#div_template").append("svg")
             .attr("width", (width + margin.left + margin.right))
             .attr("height", (height + margin.top + margin.bottom));
@@ -223,10 +237,10 @@
         var circles = wrapper.selectAll("circle").data(data).enter().append("circle")
             .attr("class", "countries")
             .attr("cx", function (d) {
-                return xs(d.Income);
+                return xs(d.GDP);
             })
             .attr("cy", function (d) {
-                return ys(d.BirthRate);
+                return ys(d.LifeExp);
             })
             .attr("r", function (d) {
                 return rs(Number(d.Population));
@@ -257,7 +271,7 @@
             .attr("text-anchor", "end")
             .style("font-size", "12px")
             .attr("transform", "translate(" + width + "," + (height - 10) + ")")
-            .text("GDP per capita [US $] - Logarithmic scale");
+            .text("GDP per capita [USD] - Logarithmic scale");
 
         // Set up y axis label
         wrapper.append("g")
